@@ -38,16 +38,24 @@ button:hover {
   background-color: rgb(190, 60, 20);
 }
 @media screen and (max-width: 600px) {
-  form, .wrapper {
-    padding: 20px !important;
-    flex-direction: column !important;
+  .wrapper {
+    padding: 20px;
+    margin: 10px;
   }
 
-  button {
+  form {
+    flex-direction: column;
+  }
+
+  form input, form select, form button {
     width: 100%;
   }
 
-  input, select {
-    width: 100%;
+  ul {
+    padding-left: 0;
+  }
+
+  li {
+    font-size: 15px;
   }
 }

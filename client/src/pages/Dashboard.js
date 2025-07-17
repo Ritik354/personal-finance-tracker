@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Charts from "../components/Charts";
 import {
   getTransactions,
   createTransaction,
@@ -113,7 +114,7 @@ export default function Dashboard() {
   return (
     <div className="wrapper" style={styles.wrapper}>
       <header style={styles.header}>
-        <h2>Welcome, {user.name} 👋</h2>
+        <h2>Welcome, {user.name}</h2>
         <button onClick={logout} style={styles.logoutButton}>
           Logout
         </button>
@@ -191,6 +192,8 @@ export default function Dashboard() {
           <option value="expense">Expense</option>
         </select>
       </div>
+      
+    <Charts transactions={transactions} filter={filter} />
 
       <ul style={styles.list}>
         {filteredTxs.map((tx) => (
@@ -231,6 +234,7 @@ export default function Dashboard() {
           </li>
         ))}
       </ul>
+      
     </div>
   );
 }
