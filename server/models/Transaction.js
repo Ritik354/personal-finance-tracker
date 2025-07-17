@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema({
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  title: {
+    type: String,
+    required: true, // ✅ You can make it optional if you prefer
   },
   amount: {
     type: Number,

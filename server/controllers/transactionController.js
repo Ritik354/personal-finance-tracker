@@ -3,9 +3,10 @@ const Transaction = require("../models/Transaction");
 // POST /api/transactions
 exports.addTransaction = async (req, res) => {
   try {
-    const { amount, type, category, note, date } = req.body;
+    const { title,amount, type, category, note, date } = req.body;
     const newTransaction = new Transaction({
       userId: req.user.userId,
+      title,
       amount,
       type,
       category,
