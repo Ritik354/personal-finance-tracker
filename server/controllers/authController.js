@@ -32,13 +32,24 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Please provide email and password" });
+    }
+
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return res.status(400).json({ msg: "Invalid email or password" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(400).json({ msg: "Invalid email or password" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables");
+      return res.status(500).json({ msg: "Server configuration error" });
+    }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
