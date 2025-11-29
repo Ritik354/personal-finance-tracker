@@ -5,25 +5,16 @@ exports.addTransaction = async (req, res) => {
   try {
     const { title, amount, type, category, note, date } = req.body;
 
-    // Debug logging
     console.log("=== TRANSACTION CREATION DEBUG ===");
     console.log("Request body:", req.body);
     console.log("User from token:", req.user);
-    console.log("User ID:", req.user?.id);
 
-    // Validation checks
-    if (!req.user || !req.user.id) {
-      console.error("No user ID found in token");
+    // Correct check
+    if (!req.user || !req.user.userId) {
       return res.status(401).json({ msg: "User authentication failed" });
     }
 
     if (!title || !amount || !type || !category) {
-      console.error("Missing required fields:", {
-        title,
-        amount,
-        type,
-        category,
-      });
       return res.status(400).json({
         msg: "Missing required fields",
         required: ["title", "amount", "type", "category"],
@@ -33,7 +24,6 @@ exports.addTransaction = async (req, res) => {
 
     // Validate type
     if (!["income", "expense"].includes(type)) {
-      console.error("Invalid transaction type:", type);
       return res.status(400).json({
         msg: "Invalid transaction type",
         validTypes: ["income", "expense"],
@@ -44,7 +34,6 @@ exports.addTransaction = async (req, res) => {
     // Validate amount
     const numericAmount = Number(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      console.error("Invalid amount:", amount);
       return res.status(400).json({
         msg: "Amount must be a positive number",
         received: amount,
@@ -52,7 +41,7 @@ exports.addTransaction = async (req, res) => {
     }
 
     console.log("Creating transaction with data:", {
-      userId: req.user.id,
+      userId: req.user.userId,
       title,
       amount: numericAmount,
       type,
@@ -62,7 +51,7 @@ exports.addTransaction = async (req, res) => {
     });
 
     const newTransaction = new Transaction({
-      userId: req.user.id,
+      userId: req.user.userId, // FIXED
       title,
       amount: numericAmount,
       type,
@@ -76,12 +65,8 @@ exports.addTransaction = async (req, res) => {
 
     res.status(201).json(savedTransaction);
   } catch (err) {
-    console.error("=== TRANSACTION CREATION ERROR ===");
-    console.error("Error type:", err.name);
-    console.error("Error message:", err.message);
-    console.error("Full error:", err);
+    console.error("=== TRANSACTION CREATION ERROR ===", err);
 
-    // Handle specific MongoDB validation errors
     if (err.name === "ValidationError") {
       const validationErrors = Object.keys(err.errors).map((key) => ({
         field: key,
@@ -94,7 +79,6 @@ exports.addTransaction = async (req, res) => {
       });
     }
 
-    // Handle duplicate key errors
     if (err.code === 11000) {
       return res.status(400).json({
         msg: "Duplicate entry",
@@ -114,13 +98,15 @@ exports.addTransaction = async (req, res) => {
 exports.getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({
-      userId: req.user.id,
+      userId: req.user.userId, // FIXED
     }).sort({ createdAt: -1 });
+
     res.status(200).json(transactions);
   } catch (err) {
-    res
-      .status(500)
-      .json({ msg: "Failed to fetch transactions", error: err.message });
+    res.status(500).json({
+      msg: "Failed to fetch transactions",
+      error: err.message,
+    });
   }
 };
 
@@ -128,11 +114,14 @@ exports.getTransactions = async (req, res) => {
 exports.updateTransaction = async (req, res) => {
   try {
     const updated = await Transaction.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
+      { _id: req.params.id, userId: req.user.userId }, // FIXED
       req.body,
       { new: true }
     );
-    if (!updated) return res.status(404).json({ msg: "Transaction not found" });
+
+    if (!updated)
+      return res.status(404).json({ msg: "Transaction not found" });
+
     res.status(200).json(updated);
   } catch (err) {
     res.status(500).json({ msg: "Failed to update", error: err.message });
@@ -144,9 +133,12 @@ exports.deleteTransaction = async (req, res) => {
   try {
     const deleted = await Transaction.findOneAndDelete({
       _id: req.params.id,
-      userId: req.user.id,
+      userId: req.user.userId, // FIXED
     });
-    if (!deleted) return res.status(404).json({ msg: "Transaction not found" });
+
+    if (!deleted)
+      return res.status(404).json({ msg: "Transaction not found" });
+
     res.status(200).json({ msg: "Transaction deleted" });
   } catch (err) {
     res.status(500).json({ msg: "Failed to delete", error: err.message });

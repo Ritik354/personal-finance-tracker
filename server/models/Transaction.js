@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   },
   title: {
     type: String,
-    required: true, // ✅ You can make it optional if you prefer
+    required: false, // ✅ You can make it optional if you prefer
   },
   amount: {
     type: Number,
